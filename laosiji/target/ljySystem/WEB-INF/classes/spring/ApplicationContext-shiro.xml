@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+						http://www.springframework.org/schema/aop 
+						http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+						http://www.springframework.org/schema/context 
+						http://www.springframework.org/schema/context/spring-context-3.0.xsd
+						http://www.springframework.org/schema/tx 
+						http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+	">
+	<!-- 让spring管理web.xml在中配置的shiroFilter -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<!-- 安全管理器 -->
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 默认的登陆访问url -->
+        <property name="loginUrl" value="/Manage/User/login.do"/>
+        <!-- 没有权限时跳转的url -->
+        <property name="unauthorizedUrl" value="/Manage/Unauth/unauth.do"></property>
+        <!-- 登陆成功跳转的url，如果不进行配置则访问上次访问的请求，建议不配置 -->
+        <property name="successUrl" value="/Manage/index.do"></property>
+        
+        <!-- 请求过滤链，具体规则再最后以注释的方法说明 -->
+        <property name="filterChainDefinitions">
+            <value>
+            	/Manage/User/login.do = anon
+            	/Manage/** = roles[admin]
+            	<!-- /Manage/User/logout.do = logout访问此请求就注销用户 -->
+            	/static/** = anon
+                /** = authc <!-- 需要认证 -->
+            </value>
+        </property>
+	</bean>
+	
+	<!-- 配置shiro的安全管理器 SecurityManage -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<!-- ref 自定义的Relam -->
+		<property name="realm" ref="customRealm" />
+		<!-- ref shiro的缓冲管理器 -->
+		<property name="cacheManager" ref="cacheManager"/>
+		<!-- ref shiro的Session管理器 -->
+		<property name="sessionManager" ref="sessionManager" />
+	</bean>
+	
+	<!-- 配置自定义的Realm -->
+   <bean id="customRealm" class="com.ljy.manage.auth.relam.CustomRelam">
+   		<property name="credentialsMatcher" ref="credentialsMatcher" />
+   </bean>
+   
+   <!-- 凭证匹配器 -->
+	<bean id="credentialsMatcher"
+		class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+		<property name="hashAlgorithmName" value="md5" />
+		<property name="hashIterations" value="1" />
+	</bean>
+	
+	<!-- 缓存管理器 -->
+	<bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+    	<property name="cacheManagerConfigFile" value="classpath:ehcache.xml"/>
+    </bean>
+    
+    <!-- 会话管理器 -->
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!-- session的失效时长，单位毫秒 -->
+        <property name="globalSessionTimeout" value="600000"/>
+        <!-- 删除失效的session -->
+        <property name="deleteInvalidSessions" value="true"/>
+    </bean>
+</beans>
+<!-- 
+过滤器简称	对应的java类
+anon	org.apache.shiro.web.filter.authc.AnonymousFilter
+authc	org.apache.shiro.web.filter.authc.FormAuthenticationFilter
+authcBasic	org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter
+perms	org.apache.shiro.web.filter.authz.PermissionsAuthorizationFilter
+port	org.apache.shiro.web.filter.authz.PortFilter
+rest	org.apache.shiro.web.filter.authz.HttpMethodPermissionFilter
+roles	org.apache.shiro.web.filter.authz.RolesAuthorizationFilter
+ssl	org.apache.shiro.web.filter.authz.SslFilter
+user	org.apache.shiro.web.filter.authc.UserFilter
+logout	org.apache.shiro.web.filter.authc.LogoutFilter
+
+
+anon:例子/admins/**=anon 没有参数，表示可以匿名使用。
+authc:例如/admins/user/**=authc表示需要认证(登录)才能使用，FormAuthenticationFilter是表单认证，没有参数 
+roles：例子/admins/user/**=roles[admin],参数可以写多个，多个时必须加上引号，并且参数之间用逗号分割，当有多个参数时，例如admins/user/**=roles["admin,guest"],每个参数通过才算通过，相当于hasAllRoles()方法。
+perms：例子/admins/user/**=perms[user:add:*],参数可以写多个，多个时必须加上引号，并且参数之间用逗号分割，例如/admins/user/**=perms["user:add:*,user:modify:*"]，当有多个参数时必须每个参数都通过才通过，想当于isPermitedAll()方法。
+rest：例子/admins/user/**=rest[user],根据请求的方法，相当于/admins/user/**=perms[user:method] ,其中method为post，get，delete等。
+port：例子/admins/user/**=port[8081],当请求的url的端口不是8081是跳转到schemal://serverName:8081?queryString,其中schmal是协议http或https等，serverName是你访问的host,8081是url配置里port的端口，queryString
+是你访问的url里的？后面的参数。
+authcBasic：例如/admins/user/**=authcBasic没有参数表示httpBasic认证
+
+ssl:例子/admins/user/**=ssl没有参数，表示安全的url请求，协议为https
+user:例如/admins/user/**=user没有参数表示必须存在用户, 身份认证通过或通过记住我认证通过的可以访问，当登入操作时不做检查
+注：
+anon，authcBasic，auchc，user是认证过滤器，
+perms，roles，ssl，rest，port是授权过滤器
+ -->

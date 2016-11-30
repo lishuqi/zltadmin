@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD SQL Map Config 3.0//EN"  
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<!-- MyBatis全局配置 -->
+	<settings>
+		<setting name="cacheEnabled" value="true" /><!-- 全局映射器启用缓存 -->
+		<setting name="useGeneratedKeys" value="true" />
+	</settings>
+
+	<!-- 配置别名 -->
+	<typeAliases>
+		<!-- <package name="com.ljy.entity,com.ljy.common.bootstarp"/> -->
+		<typeAlias type="com.ljy.entity.UserRole" alias="userRole"/>
+		<typeAlias type="com.ljy.entity.RolePermission" alias="rolePermission"/>
+		<typeAlias type="com.ljy.entity.Permission" alias="permission"/>
+		<typeAlias type="com.ljy.entity.Role" alias="role"/>
+	</typeAliases>
+
+	<plugins>
+		<!-- 分页助手配置文件 -->
+		<!-- com.github.pagehelper为PageHelper类所在包名 -->
+		<plugin interceptor="com.github.pagehelper.PageHelper">
+			<property name="dialect" value="mysql" />
+			<!-- 设置为true时，使用RowBounds分页会进行count查询 -->
+			<property name="rowBoundsWithCount" value="true" />
+		</plugin>
+
+		<!-- 通用Mapper配置文件 -->
+		<plugin interceptor="com.github.abel533.mapperhelper.MapperInterceptor">
+			<!--主键自增回写方法,默认值MYSQL,详细说明请看文档 -->
+			<property name="IDENTITY" value="MYSQL" />
+			<!--通用Mapper接口，多个通用接口用逗号隔开 -->
+			<property name="mappers" value="com.github.abel533.mapper.Mapper" />
+		</plugin>
+	</plugins>
+</configuration>

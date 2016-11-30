@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ljy.manage.mapper.UserMapper">
+	<insert id="saveUserAuthenrization" parameterType="userRole">
+		insert into t_user_role(role_id,user_id) values(#{roleId},#{userId})
+	</insert>
+	
+	<delete id="deleteUserRoleByUserId" parameterType="long">
+		delete from t_user_role where user_id = #{userId}
+	</delete>
+	
+	<select id="selectUserRoleListByUserId" parameterType="long" resultType="userRole">
+		select user_id userId,role_id roleId from t_user_role where user_id = #{userId}
+	</select>
+</mapper>

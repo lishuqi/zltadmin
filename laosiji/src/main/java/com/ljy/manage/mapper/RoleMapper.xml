@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ljy.manage.mapper.RoleMapper" >
+	<!-- //删除角色的同时需要删除，user_role表中的roleId = 删除的roleId-->
+	<delete id="deleteUserRoleByRoleId" parameterType="long">
+		delete from t_user_role where role_id = #{roleId}
+	</delete>
+	<!-- //删除角色的同时需要删除，role_permission表中的roleId = 删除的roleId -->
+	<delete id="deleteRolePermissionByRoleId" parameterType="long">
+		delete from t_role_permission where role_id = #{roleId}
+	</delete>
+	
+	<!-- 给用户分配角色的list -->
+	<select id="queryRoleListByUserId" resultType="role" parameterType="long">
+		select t.percode 
+		from t_role t
+		where t.id in (select role_id from t_user_role  where user_id = #{userId})
+	</select>
+</mapper>

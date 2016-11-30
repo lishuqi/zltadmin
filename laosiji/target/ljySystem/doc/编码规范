@@ -1,0 +1,48 @@
+
+项目构架体系：Spring + SpringMVC + MyBatis（集成通用mapper） + Shiro
+
+命名规则：
+
+1：所有的命名都遵循驼峰命名法（包括成员变量，局部变量，配置文件等）。
+2：包名都应为小写字符，对应的命名规范为： com.ljy.web项目名（例如：manage,亦或者weixin）....
+3：Mapper接口以Mapper为后缀，例如 UserMapper，mapper的包下包括所有的接口和接口的配置文件
+4：每一个Service，都应该有自己的一个包，此包下包括service接口及其实现类ServiceImpl
+5：数据库表名均以t_开头，例如 t_user;列名全部小写，每个单词之间用下划线项隔开
+6：请求的命名例如 ：后台管理系统统一使用格式：Manage/User/index.do  前台客户端统一使用格式：Client/User/index.do  格式。
+
+代码书写规则：
+1：mapper接口，Service接口不做异常处理，都向上抛，统一在Controller层进行抓取
+2：BaseController已经封装好了，消息响应的json方法，需要大家细看一下。例如
+3：BaseService已经封装好了一些常用的方法，仔细阅读有助于提高开发效率。
+    /**
+	 * 给角色授权
+	 * @param userId
+	 * @param roleId
+	 * @param req
+	 * @param resp
+	 * @throws IOException 
+	 */
+	@RequestMapping(value = "Manage/Permission/authenrization.do",method = RequestMethod.POST)
+	@SystemControllerLog(description = "角色授权")
+	public void authenrization(RoleAuthVo roleAuthVo,HttpServletRequest req,HttpServletResponse resp) throws IOException{
+		try {
+			if(roleAuthVo == null){
+				super.printParamErrorMsg(resp);
+			}
+			this.permissionService.saveRoleAuthenrization(roleAuthVo.getRoleId(),roleAuthVo.getPermissionId());
+			super.printDefaultSuccessMsg(resp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			super.printParamErrorMsg(resp);
+		}
+	}
+	
+	
+3：在Controller上应写明注解    @SystemControllerLog(description = "角色授权")  ，这个是用来做系统日志的。
+4：在Service的实现类上应写明注解   @SystemServiceLog(description = "动态填充页面下拉选项")  ，这个是用来做异常日志的。
+5：service接口的命名第一遵循驼峰命名，第二如果没事物等操作，应使用 delete，updated，save，insert开头，这是事物要求。例如：deleteUserByIds(List<Long> ids)；
+6：jsp页面的存放，可以参照已有项目的放置和命名格式
+7： 数据库主键，long是最广泛的，性能好，且能通过自增序列来赋值，方便开发。
+
+
+

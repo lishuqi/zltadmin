@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ljy.manage.mapper.PermissionMapper">
+	
+	<!-- 根据用户的Id获取到其所有的权限集合 -->
+	<select id="queryPermissionListByUserId" parameterType="long" resultType="permission">
+		select * from t_permission 
+		where id in(
+		
+		select permission_id from t_role_permission
+		
+		where role_id in(
+		
+		select role_id from t_user_role where user_id = #{userId}))
+	</select>
+	
+	<!-- 保存t_role_permisssion信息-->
+	<insert id="savePermissionAuthenrization" parameterType="rolePermission">
+		insert into t_role_permission(role_id,permission_id) values(#{roleId},#{permissionId})
+	</insert>
+	
+	<!-- 根据role删除t_role_permission中的数据 -->
+	<delete id="deleteRolePermissionByRoleId" parameterType="long">
+		delete from t_role_permission where role_id = #{roleId}
+	</delete>
+	
+	<select id="selectRolePermissionListByRoleId" parameterType="long" resultType="rolePermission">
+		select role_id roleId,permission_id permissionId from t_role_permission where role_id = #{roleId}
+	</select>
+	
+</mapper>
