@@ -1,2 +1,2 @@
 # zltadmin
-Spring+Spring+Myabtis+Shiro后台架子
+Spring+Spring+Myabtis+Shiro+Maven后台架子
